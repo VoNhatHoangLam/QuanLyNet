@@ -1,6 +1,7 @@
 {
     "java.project.referencedLibraries": [
         "lib/**/*.jar",
-        "d:\\2026\\Java\\JavaVSCODE\\lib\\mysql-connector-j-9.6.0.jar"
+        "d:\\2026\\Java\\JavaVSCODE\\lib\\mysql-connector-j-9.6.0.jar",
+        "d:\\jcalendar-1.4.jar"
     ]
 }

@@ -13,7 +13,11 @@ import DTO.UsageSessionDTO;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.time.format.DateTimeFormatter;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
@@ -205,6 +209,7 @@ public class frmMain extends javax.swing.JFrame {
         jTable1 = new javax.swing.JTable();
         jPanel14 = new javax.swing.JPanel();
         jPanel15 = new javax.swing.JPanel();
+        jCalendar1 = new com.toedter.calendar.JCalendar();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         jPanel1 = new javax.swing.JPanel();
         pnUsageInfo = new javax.swing.JPanel();
@@ -236,8 +241,21 @@ public class frmMain extends javax.swing.JFrame {
         btnAdd = new javax.swing.JButton();
         btnUpdate = new javax.swing.JButton();
         btnDelete = new javax.swing.JButton();
-        jPanel3 = new javax.swing.JPanel();
         jPanel4 = new javax.swing.JPanel();
+        jLabel3 = new javax.swing.JLabel();
+        dcBegin = new com.toedter.calendar.JDateChooser();
+        jLabel4 = new javax.swing.JLabel();
+        dcEnd = new com.toedter.calendar.JDateChooser();
+        btnShowReport = new javax.swing.JButton();
+        jPanel3 = new javax.swing.JPanel();
+        jLabel5 = new javax.swing.JLabel();
+        lbProfit = new javax.swing.JLabel();
+        lbTotalSession = new javax.swing.JLabel();
+        lbMostUse = new javax.swing.JLabel();
+        jPanel11 = new javax.swing.JPanel();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        tbReport = new javax.swing.JTable();
+        lbLeastUse = new javax.swing.JLabel();
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -275,7 +293,7 @@ public class frmMain extends javax.swing.JFrame {
         );
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-
+        
         jPanel1.setLayout(new java.awt.BorderLayout());
 
         pnUsageInfo.setBorder(javax.swing.BorderFactory.createTitledBorder("Thông tin phiên sử dụng"));
@@ -348,7 +366,7 @@ public class frmMain extends javax.swing.JFrame {
                     .addComponent(btnPrintBill))
                 .addGap(18, 18, 18)
                 .addComponent(btnCancel)
-                .addContainerGap(328, Short.MAX_VALUE))
+                .addContainerGap(480, Short.MAX_VALUE))
         );
 
         jPanel1.add(pnUsageInfo, java.awt.BorderLayout.LINE_END);
@@ -433,7 +451,7 @@ public class frmMain extends javax.swing.JFrame {
             jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel9Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 432, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 584, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -503,18 +521,124 @@ public class frmMain extends javax.swing.JFrame {
 
         jTabbedPane1.addTab("Quản lý máy", jPanel2);
 
-        jPanel3.setLayout(new java.awt.BorderLayout());
-        jTabbedPane1.addTab("Quản lý người dùng", jPanel3);
+        jLabel3.setText("Từ ngày:");
+
+        jLabel4.setText("Đến ngày:");
+
+        btnShowReport.setBackground(new java.awt.Color(102, 255, 0));
+        btnShowReport.setText("Xem báo cáo");
+        btnShowReport.addActionListener(this::btnShowReportActionPerformed);
+
+        lbProfit.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        lbProfit.setText("Tổng doanh thu:");
+
+        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
+        jPanel3.setLayout(jPanel3Layout);
+        jPanel3Layout.setHorizontalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addGap(38, 38, 38)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(lbProfit, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(377, 377, 377))
+        );
+        jPanel3Layout.setVerticalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel5)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(lbProfit)
+                .addContainerGap(8, Short.MAX_VALUE))
+        );
+
+        lbTotalSession.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        lbTotalSession.setText("Tổng số phiên:");
+
+        lbMostUse.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        lbMostUse.setText("Máy dùng nhiều nhất:");
+
+        jPanel11.setLayout(new java.awt.BorderLayout());
+
+        tbReport.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null, null, null},
+                {null, null, null, null, null, null},
+                {null, null, null, null, null, null},
+                {null, null, null, null, null, null}
+            },
+            new String [] {
+                "Mã GD", "Tên máy", "Giờ vào", "Giờ ra", "Thời gian", "Tổng tiền"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, true, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        jScrollPane3.setViewportView(tbReport);
+
+        lbLeastUse.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        lbLeastUse.setText("Máy dùng ít nhất:");
 
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
         jPanel4Layout.setHorizontalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 681, Short.MAX_VALUE)
+            .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addGap(25, 25, 25)
+                .addComponent(jLabel3)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(dcBegin, javax.swing.GroupLayout.PREFERRED_SIZE, 154, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 62, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(dcEnd, javax.swing.GroupLayout.PREFERRED_SIZE, 148, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(35, 35, 35)
+                .addComponent(btnShowReport)
+                .addGap(47, 47, 47))
+            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 681, Short.MAX_VALUE)
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addGap(37, 37, 37)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(lbLeastUse, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(lbMostUse, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(lbTotalSession, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(189, 189, 189)
+                .addComponent(jPanel11, javax.swing.GroupLayout.DEFAULT_SIZE, 0, Short.MAX_VALUE))
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 559, Short.MAX_VALUE)
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addGap(12, 12, 12)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(jLabel4)
+                        .addComponent(dcBegin, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabel3))
+                    .addComponent(dcEnd, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnShowReport))
+                .addGap(19, 19, 19)
+                .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(8, 8, 8)
+                .addComponent(lbTotalSession)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(lbMostUse)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel4Layout.createSequentialGroup()
+                        .addGap(28, 28, 28)
+                        .addComponent(jPanel11, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel4Layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(lbLeastUse)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 513, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         jTabbedPane1.addTab("Thống kê", jPanel4);
@@ -647,20 +771,90 @@ public class frmMain extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_btnCancelActionPerformed
 
+    private void btnShowReportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnShowReportActionPerformed
+        java.util.Date fromDate = dcBegin.getDate();
+        java.util.Date toDate = dcEnd.getDate();
+
+        if (fromDate == null || toDate == null) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn đầy đủ ngày bắt đầu và ngày kết thúc!");
+            return;
+        }
+
+        if (fromDate.after(toDate)) {
+            JOptionPane.showMessageDialog(this, "Ngày bắt đầu không được lớn hơn ngày kết thúc");
+            return;
+        }
+
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(toDate);
+        cal.set(Calendar.HOUR_OF_DAY, 23);
+        cal.set(Calendar.MINUTE, 59);
+        cal.set(Calendar.SECOND, 59);
+        java.util.Date fixedToDate = cal.getTime();
+
+        try {
+            List<UsageSessionDTO> list = sessionBLL.getPaidSessionsByDateRange(fromDate, fixedToDate);
+            DefaultTableModel model = (DefaultTableModel) tbReport.getModel();
+            model.setRowCount(0);            
+            double totalProfit = 0;
+            Map<String, Integer> computerUsageCount = new HashMap<>();
+            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+
+            for (UsageSessionDTO s : list) {
+                long duration = java.time.Duration.between(s.getStartTime(), s.getEndTime()).toMinutes();
+                model.addRow(new Object[]{
+                    s.getSessionId(),
+                    s.getComputerName(),
+                    s.getStartTime().format(dtf),
+                    s.getEndTime().format(dtf),
+                    duration + " phút",
+                    String.format("%.0f VND", s.getTotalPrice())
+                });
+
+                totalProfit += s.getTotalPrice();
+                String compName = s.getComputerName();
+                computerUsageCount.put(compName, computerUsageCount.getOrDefault(compName, 0) + 1);
+            }
+            String mostUsed = "---";
+            String leastUsed = "---";
+            
+            if (!computerUsageCount.isEmpty()) {
+                mostUsed = Collections.max(computerUsageCount.entrySet(), Map.Entry.comparingByValue()).getKey();
+                leastUsed = Collections.min(computerUsageCount.entrySet(), Map.Entry.comparingByValue()).getKey();
+            }
+            lbProfit.setText(String.format("Tổng doanh thu:  %.0f VNĐ", totalProfit));
+            lbTotalSession.setText("Tổng số phiên:  " + list.size());
+            lbMostUse.setText("Máy dùng nhiều nhất:  " + mostUsed);
+            lbLeastUse.setText("Máy dùng ít nhất:  " + leastUsed);
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Lỗi khi tải dữ liệu thống kê");
+            return;
+        }
+    }//GEN-LAST:event_btnShowReportActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAdd;
     private javax.swing.JButton btnCancel;
     private javax.swing.JButton btnDelete;
     private javax.swing.JButton btnPrintBill;
+    private javax.swing.JButton btnShowReport;
     private javax.swing.JButton btnStart;
     private javax.swing.JButton btnUpdate;
+    private com.toedter.calendar.JDateChooser dcBegin;
+    private com.toedter.calendar.JDateChooser dcEnd;
+    private com.toedter.calendar.JCalendar jCalendar1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel10;
+    private javax.swing.JPanel jPanel11;
     private javax.swing.JPanel jPanel14;
     private javax.swing.JPanel jPanel15;
     private javax.swing.JPanel jPanel2;
@@ -673,12 +867,18 @@ public class frmMain extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel9;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JScrollPane jScrollPane5;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JTable jTable1;
+    private javax.swing.JLabel lbLeastUse;
+    private javax.swing.JLabel lbMostUse;
+    private javax.swing.JLabel lbProfit;
+    private javax.swing.JLabel lbTotalSession;
     private javax.swing.JPanel pnCompMap;
     private javax.swing.JPanel pnUsageInfo;
+    private javax.swing.JTable tbReport;
     private javax.swing.JTable tblComputer;
     private javax.swing.JTextField txtCompName;
     private javax.swing.JTextField txtCompPrice;

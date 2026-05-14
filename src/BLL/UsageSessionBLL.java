@@ -5,9 +5,11 @@ import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
+import java.sql.SQLException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.awt.Desktop;
 
 import DAL.UsageSessionDAL;
@@ -115,5 +117,9 @@ public class UsageSessionBLL {
             return "Lỗi khi hủy phiên";
         }
         return "Hủy phiên thất bại!";
+    }
+
+    public List<UsageSessionDTO> getPaidSessionsByDateRange(java.util.Date fromDate, java.util.Date toDate) throws SQLException {
+        return dal.getPaidSessionsByDateRange(fromDate, toDate);
     }
 }

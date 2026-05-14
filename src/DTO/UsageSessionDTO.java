@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 public class UsageSessionDTO {
     private int sessionId;
     private int computerId;
+    private String computerName;
     private double priceAtStart; // Giá máy chốt tại thời điểm bắt đầu
     private LocalDateTime startTime;
     private LocalDateTime endTime; 
@@ -14,7 +15,7 @@ public class UsageSessionDTO {
 
     public UsageSessionDTO() {
     }
-
+    
     public int getSessionId() {
         return sessionId;
     }
@@ -56,6 +57,14 @@ public class UsageSessionDTO {
     }
     public void setPaymentStatus(PaymentStatus paymentStatus) {
         this.paymentStatus = paymentStatus;
+    }
+
+    public String getComputerName() {
+        return computerName;
+    }
+
+    public void setComputerName(String computerName) {
+        this.computerName = computerName;
     }
 
     

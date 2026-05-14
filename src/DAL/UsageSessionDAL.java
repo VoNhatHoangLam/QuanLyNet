@@ -6,6 +6,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 
 import DTO.ComputerDTO;
 import DTO.PaymentStatus;
@@ -144,5 +146,32 @@ public class UsageSessionDAL {
                 conn.close();
             }
         }
+    }
+
+    public List<UsageSessionDTO> getPaidSessionsByDateRange(java.util.Date fromDate, java.util.Date toDate) throws SQLException {
+        List<UsageSessionDTO> list = new ArrayList<>();
+        String sql = "SELECT s.*, c.computerName " +
+                    "FROM UsageSession s " +
+                    "JOIN Computer c ON s.computerId = c.computerId " +
+                    "WHERE s.paymentStatus = 'PAID' AND s.endTime BETWEEN ? AND ?";
+        
+        try (Connection conn = DBConnection.getConnection();
+            PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setTimestamp(1, new java.sql.Timestamp(fromDate.getTime()));
+            pstmt.setTimestamp(2, new java.sql.Timestamp(toDate.getTime()));
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    UsageSessionDTO session = new UsageSessionDTO();
+                    session.setSessionId(rs.getInt("sessionId"));
+                    session.setComputerId(rs.getInt("computerId"));
+                    session.setComputerName(rs.getString("computerName")); 
+                    session.setStartTime(rs.getTimestamp("startTime").toLocalDateTime());
+                    session.setEndTime(rs.getTimestamp("endTime").toLocalDateTime());
+                    session.setTotalPrice(rs.getDouble("totalPrice"));
+                    list.add(session);
+                }
+            }
+        }
+        return list;
     }
 }
