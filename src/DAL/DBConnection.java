@@ -14,7 +14,7 @@ import java.sql.SQLException;
  * @author ripni
  */
 public class DBConnection {
-    private static final String url = "jdbc:mysql://localhost:3306/NetManager";
+    private static final String url = "jdbc:mysql://localhost:3306/netmanager";
     private static final String user = "root";
     private static final String pass = "Hoanglam2006";  
 

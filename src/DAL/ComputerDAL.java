@@ -73,4 +73,28 @@ public class ComputerDAL {
             return pstmt.executeUpdate() > 0;
         }
     }
+
+    public List<ComputerDTO> searchComputers(String keyword) throws SQLException {
+        List<ComputerDTO> list = new ArrayList<>();
+        String searchPattern = "%" + keyword + "%";
+        String sql = "SELECT * FROM Computer WHERE computerName LIKE ? OR CAST(pricePerHour AS CHAR) LIKE ? OR status LIKE ?";
+
+        try (Connection conn = DBConnection.getConnection();
+            PreparedStatement pstmt = conn.prepareStatement(sql)) {       
+            pstmt.setString(1, searchPattern);
+            pstmt.setString(2, searchPattern);
+            pstmt.setString(3, searchPattern);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    ComputerDTO cp = new ComputerDTO();
+                    cp.setComputerId(rs.getInt("computerId"));
+                    cp.setComputerName(rs.getString("computerName"));
+                    cp.setPricePerHour(rs.getDouble("pricePerHour"));
+                    cp.setStatus(CompStatus.valueOf(rs.getString("status")));
+                    list.add(cp);
+                }
+            }
+        }
+        return list;
+    }
 }

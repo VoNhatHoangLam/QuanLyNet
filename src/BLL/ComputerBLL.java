@@ -7,6 +7,8 @@ package BLL;
 import DAL.ComputerDAL;
 import DTO.CompStatus;
 import DTO.ComputerDTO;
+
+import java.sql.SQLException;
 import java.util.List;
 
 /**
@@ -55,5 +57,9 @@ public class ComputerBLL {
             e.printStackTrace();
             return "Lỗi";
         }
+    }
+
+    public List<ComputerDTO> searchComputers(String keyword) throws SQLException {
+        return compDAL.searchComputers(keyword);
     }
 }
