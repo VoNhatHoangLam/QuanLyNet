@@ -13,6 +13,7 @@ import DTO.UsageSessionDTO;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
@@ -87,10 +88,9 @@ public class frmMain extends javax.swing.JFrame {
             } else {
                 list = compBLL.searchComputers(keyword.trim()); 
             }
-            int compCount = 1;
             for (ComputerDTO cp : list) {
                 JButton btn = new JButton();
-                btn.setText("Máy " + compCount++ + ": " + cp.getComputerName());
+                btn.setText(cp.getComputerName());
                 btn.setPreferredSize(new Dimension(150, 150));
                 btn.setVerticalTextPosition(SwingConstants.BOTTOM);
                 btn.setHorizontalTextPosition(SwingConstants.CENTER);
@@ -811,37 +811,65 @@ public class frmMain extends javax.swing.JFrame {
         try {
             List<UsageSessionDTO> list = sessionBLL.getPaidSessionsByDateRange(fromDate, fixedToDate);
             DefaultTableModel model = (DefaultTableModel) tbReport.getModel();
-            model.setRowCount(0);            
-            double totalProfit = 0;
-            Map<String, Integer> computerUsageCount = new HashMap<>();
-            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+            model.setRowCount(0); 
 
+            double totalRevenue = 0;
+            Map<String, Long> computerUsageTime = new HashMap<>();
+            try {
+                List<ComputerDTO> allComps = compBLL.getAllComputers(); 
+                for (ComputerDTO c : allComps) {
+                    computerUsageTime.put(c.getComputerName(), 0L);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.err.println("Không lấy được danh sách máy");
+            }
+            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
             for (UsageSessionDTO s : list) {
-                long duration = java.time.Duration.between(s.getStartTime(), s.getEndTime()).toMinutes();
+                long durationMinutes = java.time.Duration.between(s.getStartTime(), s.getEndTime()).toMinutes();
+                
                 model.addRow(new Object[]{
                     s.getSessionId(),
                     s.getComputerName(),
                     s.getStartTime().format(dtf),
                     s.getEndTime().format(dtf),
-                    duration + " phút",
-                    String.format("%,.0f VND", s.getTotalPrice())
+                    durationMinutes + " phút",
+                    String.format("%,.0f", s.getTotalPrice()) 
                 });
-
-                totalProfit += s.getTotalPrice();
+                
+                totalRevenue += s.getTotalPrice();
                 String compName = s.getComputerName();
-                computerUsageCount.put(compName, computerUsageCount.getOrDefault(compName, 0) + 1);
+                if (computerUsageTime.containsKey(compName)) {
+                    long currentTime = computerUsageTime.get(compName);
+                    computerUsageTime.put(compName, currentTime + durationMinutes);
+                }
             }
-            String mostUsed = "---";
-            String leastUsed = "---";
-            
-            if (!computerUsageCount.isEmpty()) {
-                mostUsed = Collections.max(computerUsageCount.entrySet(), Map.Entry.comparingByValue()).getKey();
-                leastUsed = Collections.min(computerUsageCount.entrySet(), Map.Entry.comparingByValue()).getKey();
+            if (!computerUsageTime.isEmpty()) {
+                long maxTime = Collections.max(computerUsageTime.values());
+                long minTime = Collections.min(computerUsageTime.values());
+
+                List<String> listMaxComps = new ArrayList<>();
+                List<String> listMinComps = new ArrayList<>();
+
+                for (Map.Entry<String, Long> entry : computerUsageTime.entrySet()) {
+                    if (entry.getValue() == maxTime) {
+                        listMaxComps.add(entry.getKey());
+                    }
+                    if (entry.getValue() == minTime) {
+                        listMinComps.add(entry.getKey());
+                    }
+                }
+
+                // Hiển thị kết quả (VD: Máy 01, Máy 02 (180 phút))
+                lbMostUse.setText("Máy dùng nhiều nhất: " + String.join(", ", listMaxComps) + " (" + maxTime + " phút)");
+                lbLeastUse.setText("Máy dùng ít nhất: " + String.join(", ", listMinComps) + " (" + minTime + " phút)");
+            } else {
+                lbMostUse.setText("Máy dùng nhiều nhất: ---");
+                lbLeastUse.setText("Máy dùng ít nhất: ---");
             }
-            lbProfit.setText(String.format("Tổng doanh thu:  %,.0f VNĐ", totalProfit));
-            lbTotalSession.setText("Tổng số phiên:  " + list.size());
-            lbMostUse.setText("Máy dùng nhiều nhất:  " + mostUsed);
-            lbLeastUse.setText("Máy dùng ít nhất:  " + leastUsed);
+
+            lbProfit.setText("Tổng doanh thu: " + String.format("%,.0f VNĐ", totalRevenue));
+            lbTotalSession.setText("Số phiên: " + String.valueOf(list.size()));
         } catch (Exception e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(this, "Lỗi khi tải dữ liệu thống kê");
